@@ -5,11 +5,12 @@ import ValidatorCore from './validator.core';
 
 export default class Validator extends ValidatorCore {
 
-  isRequiredError = 'This is required field';
+  isRequiredError = 'This field is required';
   isTextError = 'Value is not a string';
   isNumberError = 'Value is not a number';
   isUrlPathError = 'Value is not a path';
   isUrlError = 'Value is not a url';
+  isEmailError = 'Value is not a email';
 
   isRequired(value) {
     return Boolean(value);
@@ -32,6 +33,11 @@ export default class Validator extends ValidatorCore {
   isUrlPath(value) {
     const reg = /^(\/)([\w\-\.]+[^#?\s]+)([\w\-]*)?(#[\w\-]+)?$/g;
     return value.match(reg)
+  }
+
+  isEmail(value) {
+    const reg = /^[\d\w]+[\w\d._-]*@([\w\d-_]+\.)+[\w]{2,}$/i;
+    return value.match(reg);
   }
 
   isEq(value, compareValue) {

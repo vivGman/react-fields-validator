@@ -194,7 +194,7 @@ export default class ValidatorCore extends React.Component {
 
   _onBlur(ev) {
     this.setState({ 
-      changed: true, 
+      isChanged: true, 
       hasFocus: false 
     })
   }
@@ -244,7 +244,9 @@ export default class ValidatorCore extends React.Component {
         errors.push(result);
       }
 
-    })
+    });
+
+    this.errorNames= names;
 
     return errors;
   }
