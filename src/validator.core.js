@@ -200,6 +200,7 @@ export default class ValidatorCore extends React.Component {
   }
 
   _checkErrors(value) {
+    const isRequired = this.props.validators.includes('isRequired')
     let validators = [];
     let names = [];
     let params = [];
@@ -230,21 +231,23 @@ export default class ValidatorCore extends React.Component {
       }
     });
 
-    validators.forEach((validator, index) => {
+    if (isRequired ? true : Boolean(value)) {
+      validators.forEach((validator, index) => {
 
-      const result = validator(value, params[index])
+        const result = validator(value, params[index])
 
-      if (!result) {
-        const methodName = names[index];
-        const message = this.props[methodName + 'Error'] || this[methodName + 'Error'] || 'Error';
-        errors.push(message);
-      }
+        if (!result) {
+          const methodName = names[index];
+          const message = this.props[methodName + 'Error'] || this[methodName + 'Error'] || 'Error';
+          errors.push(message);
+        }
 
-      if (result instanceof Promise) {
-        errors.push(result);
-      }
+        if (result instanceof Promise) {
+          errors.push(result);
+        }
 
-    });
+      });
+    }
 
     this.errorNames= names;
 
