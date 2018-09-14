@@ -61,19 +61,19 @@ export default class ValidatorCore extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    const [ messages, promises ] = nextState.messages.reduce((result, item, index, array) => {
-      let [ messages, promises ] = result;
+    // const [ messages, promises ] = nextState.messages.reduce((result, item, index, array) => {
+    //   let [ messages, promises ] = result;
       
-      if (item instanceof String) {
-        messages.push(item);
-      }
+    //   if (item instanceof String) {
+    //     messages.push(item);
+    //   }
 
-      if (item instanceof String) {
-        messages.push(item);
-      }
+    //   if (item instanceof Promise) {
+    //     promises.push(item);
+    //   }
 
-      return result;
-    }, [[],[]]);
+    //   return result;
+    // }, [[],[]]);
 
     const state = {
       isValid: true,
@@ -95,7 +95,7 @@ export default class ValidatorCore extends React.Component {
       state.messages = this._checkErrors(nextState[this._valueProp]); 
 
       if (nextState.hasFocus) {
-        state.messages = [];
+        // state.messages = [];
         state.isValid = true;
         state.hasError = false;
       } else {
@@ -108,7 +108,7 @@ export default class ValidatorCore extends React.Component {
       state.messages = this._checkErrors(nextState[this._valueProp]);
 
       if (nextState.hasFocus) {
-        state.messages = [];
+        // state.messages = [];
         state.isValid = true;
         state.hasError = false;
       } else {
@@ -210,34 +210,44 @@ export default class ValidatorCore extends React.Component {
       let validator;
 
       if (typeof methodName === 'string' && this[methodName] && typeof this[methodName] === 'function') {
-        validators.push(this[methodName]);
-        names.push(methodName)
+        validators.push({
+          func: this[methodName],
+          name: methodName,
+          params: []
+        });
       }
 
       if (typeof methodName === 'function') {
-        validators.push(methodName);
-        names.push(void 0)
+        validators.push({
+          func: methodName,
+          name: 'unknown',
+          params: []
+        });
       }
 
       if (typeof methodName === 'object') {
         const hash = methodName;
-        Object.keys(hash).forEach(methodName => {
-          if (this[methodName] && typeof this[methodName] === 'function') {
-            params[validators.length] = hash[methodName]
-            names.push(methodName)
-            validators.push(this[methodName]);
-          }
-        });
+        const defaultFunc = typeof this[hash.name] === 'function' ? this[hash.name] : null
+        const func = hash.func || defaultFunc;
+        if (func) {
+          validators.push({
+            func: func,
+            name: hash.name || 'unknown',
+            params: [].concat(hash.params || [])
+          });
+        } else {
+          debugger
+        }
       }
     });
 
     if (isRequired ? true : Boolean(value)) {
       validators.forEach((validator, index) => {
 
-        const result = validator(value, params[index])
+        const result = validator.func.apply(this, [value].concat(validator.params))
 
         if (!result) {
-          const methodName = names[index];
+          const methodName = validator.name;
           const message = this.props[methodName + 'Error'] || this[methodName + 'Error'] || 'Error';
           errors.push(message);
         }
@@ -245,11 +255,8 @@ export default class ValidatorCore extends React.Component {
         if (result instanceof Promise) {
           errors.push(result);
         }
-
       });
     }
-
-    this.errorNames= names;
 
     return errors;
   }
