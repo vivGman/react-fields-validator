@@ -181,8 +181,8 @@ export default class ValidatorCore extends React.Component {
   _onChange(ev) {
     this.setState({ 
       isChanged: true, 
-      value: ev.target.value, 
-      checked: ev.target.checked 
+      value: this.props.hasOwnProperty('value') ? this.props.value : ev.target.value, 
+      checked: this.props.hasOwnProperty('checked') ? this.props.checked : ev.target.checked 
     });
   }
 
