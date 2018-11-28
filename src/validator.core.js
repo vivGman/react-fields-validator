@@ -82,10 +82,10 @@ export default class ValidatorCore extends React.Component {
     };
     let needUpdate = false;
 
-    if (!this.props.bool && !this.state[this._valueProp] && nextProps.defaultValue !== this.state[this._valueProp]) {
+    if (!this.props.bool && !this.state[this._valueProp] && nextProps.value !== this.state[this._valueProp]) {
       needUpdate = true;
-      state.messages = this._checkErrors(nextProps.defaultValue); 
-      state.value = nextProps.defaultValue;
+      state.messages = this._checkErrors(nextProps.value); 
+      state.value = nextProps.value;
 
       state.isValid = !state.messages.length;
     }
