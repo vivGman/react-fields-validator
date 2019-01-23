@@ -26,16 +26,19 @@ export default class Validator extends ValidatorCore {
   }
 
   isUrl(value) {
+    value = String(value)
     const reg = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
     return value.match(reg);
   }
 
   isUrlPath(value) {
+    value = String(value)
     const reg = /^(\/)([\w\-\.]+[^#?\s]+)([\w\-]*)?(#[\w\-]+)?$/g;
     return value.match(reg)
   }
 
   isEmail(value) {
+    value = String(value)
     const reg = /^[\d\w]+[\w\d._-]*@([\w\d-_]+\.)+[\w]{2,}$/i;
     return value.match(reg);
   }
