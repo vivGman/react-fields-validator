@@ -49,6 +49,12 @@ class Example extends Component {
 
 [Нестандартные валидации](https://github.com/vivGman/react-fields-validator/blob/master/docs/custom-validations.md)
 
+## TODO
+
+- Покрыть тестами
+- Написать документацию
+- Добавить примеры использования
+
 ## License
 
 MIT © [vivGman](https://github.com/vivGman)
