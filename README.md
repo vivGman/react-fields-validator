@@ -45,9 +45,9 @@ class Example extends Component {
 ## Примеры использования
 
 
-[Валидация формы](https://github.com/vivGman/react-fields-validator/blob/master/docs/validation-form.md)
+ - [Валидация формы](https://github.com/vivGman/react-fields-validator/blob/master/docs/validation-form.md)
 
-[Нестандартные валидации](https://github.com/vivGman/react-fields-validator/blob/master/docs/custom-validations.md)
+ - [Нестандартные валидации](https://github.com/vivGman/react-fields-validator/blob/master/docs/custom-validations.md)
 
 ## TODO
 
