@@ -4,23 +4,39 @@
 
 [![NPM](https://img.shields.io/npm/v/react-fields-validator.svg)](https://www.npmjs.com/package/react-fields-validator) [![JavaScript Style Guide](https://img.shields.io/badge/code_style-standard-brightgreen.svg)](https://standardjs.com)
 
-## Install
+## Установка
 
 ```bash
 npm install --save react-fields-validator
 ```
 
-## Usage
+## Использование
 
 ```jsx
 import React, { Component } from 'react'
 
-import MyComponent from 'react-fields-validator'
+import Validator from 'react-fields-validator'
 
 class Example extends Component {
+  state = {
+    value: ''
+  }
+  
+  onChange(ev) {
+    this.setState({ 
+      value: ev.target.value
+    });
+  }
+  
   render () {
     return (
-      <MyComponent />
+      <Validator 
+        value={this.state.value}
+        validators={['isRequired']}
+        render={(value, hasError, messages) => (
+          <input type="text" value={value} onChange={(ev) => this.onChange(ev)}/>
+        )}
+      />
     )
   }
 }
