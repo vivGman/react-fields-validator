@@ -1,5 +1,8 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
+
+console.log(1234)
 
 export default class ValidatorCore extends React.Component {
 
@@ -8,6 +11,7 @@ export default class ValidatorCore extends React.Component {
   };
 
   static defaultProps = {
+    enableEventListeners: true,
     bool: false,
     defaultValue: '',
     wrapper: 'div',
@@ -26,7 +30,7 @@ export default class ValidatorCore extends React.Component {
     super(props);
 
     this.state = {
-      value: this.props.value || this.props.defaultValue,
+      value: this.props.value === undefined ? this.props.defaultValue : this.props.value,
       messages: [],
       isValid: true,
       hasError: false,
@@ -53,6 +57,21 @@ export default class ValidatorCore extends React.Component {
       const results = this.props.onValidateForm.validators.map(instance => !instance.hasError);
       return results.every(isTrue => isTrue);
     };
+
+    if (this.props.enableEventListeners) {
+      const domNode = ReactDOM.findDOMNode(this);
+
+      domNode.addEventListener('change', (ev) => this._onChange(ev), {
+        capture: true,
+      });
+      domNode.addEventListener('focus', (ev) => this._onFocus(ev), {
+        capture: true,
+      });
+      domNode.addEventListener('blur', (ev) => this._onBlur(ev), {
+        capture: true,
+      });
+    }
+
   }
 
   componentWillUnmount() {
@@ -125,17 +144,18 @@ export default class ValidatorCore extends React.Component {
   }
 
   render() {
-    const Wrapper = this.props.wrapper;
-    return (
-      <Wrapper 
-        ref={el => this.el = el} 
-        onChange={(ev) => this._onChange(ev)} 
-        onFocus={(ev) => this._onFocus(ev)} 
-        onBlur={(ev) => this._onBlur(ev)}
-        className={this.props.className}>
-        {this.props.render(this.state)}
-      </Wrapper>
-    )
+    return this.props.render(this.state);
+    // const Wrapper = this.props.wrapper;
+    // return (
+    //   <Wrapper 
+    //     ref={el => this.el = el} 
+    //     onChange={(ev) => this._onChange(ev)} 
+    //     onFocus={(ev) => this._onFocus(ev)} 
+    //     onBlur={(ev) => this._onBlur(ev)}
+    //     className={this.props.className}>
+    //     {this.props.render(this.state)}
+    //   </Wrapper>
+    // )
   }
 
   /* PUBLIC */
@@ -151,14 +171,14 @@ export default class ValidatorCore extends React.Component {
     state.isValid = !state.messages.length;
     state.hasError = !state.isValid;
 
-    let rect = this.el.getBoundingClientRect();
+    /*let rect = this.el.getBoundingClientRect();
 
     
     setTimeout(() => {
       if (state.hasError && rect.y) {
         window.scrollTo(0, rect.y - 80);
       }
-    }, 50)
+    }, 50)*/
 
     this.setState(state, () => {
       this.props.onValidateForm(state);

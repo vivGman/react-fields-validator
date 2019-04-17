@@ -1,4 +1,5 @@
 import React from 'react';
+import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
@@ -55,6 +56,8 @@ var possibleConstructorReturn = function (self, call) {
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
 
+console.log(1234);
+
 var ValidatorCore = function (_React$Component) {
   inherits(ValidatorCore, _React$Component);
 
@@ -66,7 +69,7 @@ var ValidatorCore = function (_React$Component) {
     var _this = possibleConstructorReturn(this, (ValidatorCore.__proto__ || Object.getPrototypeOf(ValidatorCore)).call(this, props));
 
     _this.state = {
-      value: _this.props.value || _this.props.defaultValue,
+      value: _this.props.value === undefined ? _this.props.defaultValue : _this.props.value,
       messages: [],
       isValid: true,
       hasError: false
@@ -107,6 +110,26 @@ var ValidatorCore = function (_React$Component) {
           return isTrue;
         });
       };
+
+      if (this.props.enableEventListeners) {
+        var domNode = ReactDOM.findDOMNode(this);
+
+        domNode.addEventListener('change', function (ev) {
+          return _this2._onChange(ev);
+        }, {
+          capture: true
+        });
+        domNode.addEventListener('focus', function (ev) {
+          return _this2._onFocus(ev);
+        }, {
+          capture: true
+        });
+        domNode.addEventListener('blur', function (ev) {
+          return _this2._onBlur(ev);
+        }, {
+          capture: true
+        });
+      }
     }
   }, {
     key: 'componentWillUnmount',
@@ -184,27 +207,18 @@ var ValidatorCore = function (_React$Component) {
   }, {
     key: 'render',
     value: function render() {
-      var _this4 = this;
-
-      var Wrapper = this.props.wrapper;
-      return React.createElement(
-        Wrapper,
-        {
-          ref: function ref(el) {
-            return _this4.el = el;
-          },
-          onChange: function onChange(ev) {
-            return _this4._onChange(ev);
-          },
-          onFocus: function onFocus(ev) {
-            return _this4._onFocus(ev);
-          },
-          onBlur: function onBlur(ev) {
-            return _this4._onBlur(ev);
-          },
-          className: this.props.className },
-        this.props.render(this.state)
-      );
+      return this.props.render(this.state);
+      // const Wrapper = this.props.wrapper;
+      // return (
+      //   <Wrapper 
+      //     ref={el => this.el = el} 
+      //     onChange={(ev) => this._onChange(ev)} 
+      //     onFocus={(ev) => this._onFocus(ev)} 
+      //     onBlur={(ev) => this._onBlur(ev)}
+      //     className={this.props.className}>
+      //     {this.props.render(this.state)}
+      //   </Wrapper>
+      // )
     }
 
     /* PUBLIC */
@@ -212,7 +226,7 @@ var ValidatorCore = function (_React$Component) {
   }, {
     key: 'panic',
     value: function panic() {
-      var _this5 = this;
+      var _this4 = this;
 
       var state = {
         isValid: true,
@@ -224,17 +238,17 @@ var ValidatorCore = function (_React$Component) {
       state.isValid = !state.messages.length;
       state.hasError = !state.isValid;
 
-      var rect = this.el.getBoundingClientRect();
-
-      setTimeout(function () {
+      /*let rect = this.el.getBoundingClientRect();
+       
+      setTimeout(() => {
         if (state.hasError && rect.y) {
           window.scrollTo(0, rect.y - 80);
         }
-      }, 50);
+      }, 50)*/
 
       this.setState(state, function () {
-        _this5.props.onValidateForm(state);
-        _this5.props.onValidate(state);
+        _this4.props.onValidateForm(state);
+        _this4.props.onValidate(state);
       });
 
       return !state.hasError;
@@ -270,7 +284,7 @@ var ValidatorCore = function (_React$Component) {
   }, {
     key: '_checkErrors',
     value: function _checkErrors(value) {
-      var _this6 = this;
+      var _this5 = this;
 
       var isRequired = this.props.validators.includes('isRequired');
       var validators = [];
@@ -278,9 +292,9 @@ var ValidatorCore = function (_React$Component) {
 
       this.props.validators.forEach(function (methodName) {
 
-        if (typeof methodName === 'string' && _this6[methodName] && typeof _this6[methodName] === 'function') {
+        if (typeof methodName === 'string' && _this5[methodName] && typeof _this5[methodName] === 'function') {
           validators.push({
-            func: _this6[methodName],
+            func: _this5[methodName],
             name: methodName,
             params: []
           });
@@ -296,7 +310,7 @@ var ValidatorCore = function (_React$Component) {
 
         if ((typeof methodName === 'undefined' ? 'undefined' : _typeof(methodName)) === 'object') {
           var hash = methodName;
-          var defaultFunc = typeof _this6[hash.name] === 'function' ? _this6[hash.name] : null;
+          var defaultFunc = typeof _this5[hash.name] === 'function' ? _this5[hash.name] : null;
           var func = hash.func || defaultFunc;
           if (func) {
             validators.push({
@@ -313,11 +327,11 @@ var ValidatorCore = function (_React$Component) {
       if (isRequired ? true : Boolean(value)) {
         validators.forEach(function (validator, index) {
 
-          var result = validator.func.apply(_this6, [value].concat(validator.params));
+          var result = validator.func.apply(_this5, [value].concat(validator.params));
 
           if (!result) {
             var methodName = validator.name;
-            var message = _this6.props[methodName + 'Error'] || _this6[methodName + 'Error'] || 'Error';
+            var message = _this5.props[methodName + 'Error'] || _this5[methodName + 'Error'] || 'Error';
             errors.push(message);
           }
 
@@ -356,6 +370,7 @@ ValidatorCore.propTypes = {
   defaultValue: PropTypes.any
 };
 ValidatorCore.defaultProps = {
+  enableEventListeners: true,
   bool: false,
   defaultValue: '',
   wrapper: 'div',
