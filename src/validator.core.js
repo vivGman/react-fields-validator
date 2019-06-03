@@ -2,8 +2,6 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import PropTypes from 'prop-types';
 
-console.log(1234)
-
 export default class ValidatorCore extends React.Component {
 
   static propTypes = {
@@ -80,20 +78,6 @@ export default class ValidatorCore extends React.Component {
   }
 
   componentWillUpdate(nextProps, nextState) {
-    // const [ messages, promises ] = nextState.messages.reduce((result, item, index, array) => {
-    //   let [ messages, promises ] = result;
-      
-    //   if (item instanceof String) {
-    //     messages.push(item);
-    //   }
-
-    //   if (item instanceof Promise) {
-    //     promises.push(item);
-    //   }
-
-    //   return result;
-    // }, [[],[]]);
-
     const state = {
       isValid: true,
       messages: nextState.messages,
@@ -107,55 +91,88 @@ export default class ValidatorCore extends React.Component {
       state.value = nextProps.value;
 
       state.isValid = !state.messages.length;
+      // console.log(1, state.messages)
     }
 
-    if (nextState[this._valueProp] !== this.state[this._valueProp]) {
-      needUpdate = true;
-      state.messages = this._checkErrors(nextState[this._valueProp]); 
+    // if (nextState[this._valueProp] !== this.state[this._valueProp]) {
+    //   needUpdate = true;
+    //   state.messages = this._checkErrors(nextState[this._valueProp]); 
 
-      if (nextState.hasFocus) {
-        // state.messages = [];
-        state.isValid = true;
-        state.hasError = false;
-      } else {
-        state.isValid = !state.messages.length;
-      }
-    }
+    //   if (nextState.hasFocus) {
+    //     // state.messages = [];
+    //     state.isValid = true;
+    //     state.hasError = false;
+    //   } else {
+    //     state.isValid = !state.messages.length;
+    //   }
+    //   // console.log(2, state.messages)
+    // }
 
     if (nextState.hasFocus !== this.state.hasFocus) {
       needUpdate = true;
       state.messages = this._checkErrors(nextState[this._valueProp]);
 
       if (nextState.hasFocus) {
-        // state.messages = [];
-        state.isValid = true;
+        state.isValid = !state.messages.length;
         state.hasError = false;
       } else {
         state.isValid = !state.messages.length;
         state.hasError = !state.isValid;
       }
+      // console.log(3, state.messages)
     }
 
     if (needUpdate) {
+      const { messages, promises } = state.messages.reduce((result, item) => {
+        if (typeof item === 'string') {
+          result.messages.push(item);
+        } else {
+          if (item instanceof Object && item.promise instanceof Promise) {
+            result.promises.push(item);
+          }
+        }
+        return result;
+      }, {messages:[], promises:[]});
+
+      if (promises.length) {
+        Promise.all(promises.map(item => item.promise)).then(responses => {
+          const _messages = this.state.messages.concat(responses
+            .map((valid, index) => {
+              return valid ? true : promises[index].message
+            })
+            .filter(message => {
+              return typeof message === 'string'
+            }));
+
+          const isValid = _messages.length === 0;
+          const hasError = !this.state.hasFocus && !isValid;
+
+          // console.log('async', isValid, _messages)
+
+          this.setState({
+            isValid: isValid,
+            messages: _messages,
+            hasError: hasError
+          }, () => {
+            this.props.onValidate(state);
+          });
+        })
+      }
+
+      state.messages = messages;
+
+      // console.log('sync', state.isValid, state.messages)
+
       this.setState(state, () => {
         this.props.onValidate(state);
       });
     }
+
+
   }
 
   render() {
     return this.props.render(this.state);
-    // const Wrapper = this.props.wrapper;
-    // return (
-    //   <Wrapper 
-    //     ref={el => this.el = el} 
-    //     onChange={(ev) => this._onChange(ev)} 
-    //     onFocus={(ev) => this._onFocus(ev)} 
-    //     onBlur={(ev) => this._onBlur(ev)}
-    //     className={this.props.className}>
-    //     {this.props.render(this.state)}
-    //   </Wrapper>
-    // )
   }
 
   /* PUBLIC */
@@ -170,15 +187,6 @@ export default class ValidatorCore extends React.Component {
     state.messages = this._checkErrors(this.state[this._valueProp]); 
     state.isValid = !state.messages.length;
     state.hasError = !state.isValid;
-
-    /*let rect = this.el.getBoundingClientRect();
-
-    
-    setTimeout(() => {
-      if (state.hasError && rect.y) {
-        window.scrollTo(0, rect.y - 80);
-      }
-    }, 50)*/
 
     this.setState(state, () => {
       this.props.onValidateForm(state);
@@ -225,6 +233,7 @@ export default class ValidatorCore extends React.Component {
     let names = [];
     let params = [];
     let errors = [];
+    const promises = [];
 
     this.props.validators.forEach(methodName => {
       let validator;
@@ -233,7 +242,8 @@ export default class ValidatorCore extends React.Component {
         validators.push({
           func: this[methodName],
           name: methodName,
-          params: []
+          params: [],
+          message: this[methodName + 'Error']
         });
       }
 
@@ -241,7 +251,8 @@ export default class ValidatorCore extends React.Component {
         validators.push({
           func: methodName,
           name: 'unknown',
-          params: []
+          params: [],
+          message: 'Error'
         });
       }
 
@@ -253,10 +264,9 @@ export default class ValidatorCore extends React.Component {
           validators.push({
             func: func,
             name: hash.name || 'unknown',
-            params: [].concat(hash.params || [])
+            params: [].concat(hash.params || []),
+            message: hash.message || this.props[methodName + 'Error'] || this[methodName + 'Error'] || 'Error'
           });
-        } else {
-          debugger
         }
       }
     });
@@ -267,15 +277,19 @@ export default class ValidatorCore extends React.Component {
         const result = validator.func.apply(this, [value].concat(validator.params))
 
         if (!result) {
-          const methodName = validator.name;
-          const message = this.props[methodName + 'Error'] || this[methodName + 'Error'] || 'Error';
-          errors.push(message);
+          errors.push(validator.message);
         }
 
         if (result instanceof Promise) {
-          errors.push(result);
+          const methodName = validator.name;
+          errors.push({
+            ...validator,
+            promise: result
+          });
         }
       });
+
+      
     }
 
     return errors;

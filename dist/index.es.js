@@ -32,6 +32,20 @@ var createClass = function () {
   };
 }();
 
+var _extends = Object.assign || function (target) {
+  for (var i = 1; i < arguments.length; i++) {
+    var source = arguments[i];
+
+    for (var key in source) {
+      if (Object.prototype.hasOwnProperty.call(source, key)) {
+        target[key] = source[key];
+      }
+    }
+  }
+
+  return target;
+};
+
 var inherits = function (subClass, superClass) {
   if (typeof superClass !== "function" && superClass !== null) {
     throw new TypeError("Super expression must either be null or a function, not " + typeof superClass);
@@ -55,8 +69,6 @@ var possibleConstructorReturn = function (self, call) {
 
   return call && (typeof call === "object" || typeof call === "function") ? call : self;
 };
-
-console.log(1234);
 
 var ValidatorCore = function (_React$Component) {
   inherits(ValidatorCore, _React$Component);
@@ -142,20 +154,6 @@ var ValidatorCore = function (_React$Component) {
     value: function componentWillUpdate(nextProps, nextState) {
       var _this3 = this;
 
-      // const [ messages, promises ] = nextState.messages.reduce((result, item, index, array) => {
-      //   let [ messages, promises ] = result;
-
-      //   if (item instanceof String) {
-      //     messages.push(item);
-      //   }
-
-      //   if (item instanceof Promise) {
-      //     promises.push(item);
-      //   }
-
-      //   return result;
-      // }, [[],[]]);
-
       var state = {
         isValid: true,
         messages: nextState.messages,
@@ -169,36 +167,80 @@ var ValidatorCore = function (_React$Component) {
         state.value = nextProps.value;
 
         state.isValid = !state.messages.length;
+        // console.log(1, state.messages)
       }
 
-      if (nextState[this._valueProp] !== this.state[this._valueProp]) {
-        needUpdate = true;
-        state.messages = this._checkErrors(nextState[this._valueProp]);
+      // if (nextState[this._valueProp] !== this.state[this._valueProp]) {
+      //   needUpdate = true;
+      //   state.messages = this._checkErrors(nextState[this._valueProp]); 
 
-        if (nextState.hasFocus) {
-          // state.messages = [];
-          state.isValid = true;
-          state.hasError = false;
-        } else {
-          state.isValid = !state.messages.length;
-        }
-      }
+      //   if (nextState.hasFocus) {
+      //     // state.messages = [];
+      //     state.isValid = true;
+      //     state.hasError = false;
+      //   } else {
+      //     state.isValid = !state.messages.length;
+      //   }
+      //   // console.log(2, state.messages)
+      // }
 
       if (nextState.hasFocus !== this.state.hasFocus) {
         needUpdate = true;
         state.messages = this._checkErrors(nextState[this._valueProp]);
 
         if (nextState.hasFocus) {
-          // state.messages = [];
-          state.isValid = true;
+          state.isValid = !state.messages.length;
           state.hasError = false;
         } else {
           state.isValid = !state.messages.length;
           state.hasError = !state.isValid;
         }
+        // console.log(3, state.messages)
       }
 
       if (needUpdate) {
+        var _state$messages$reduc = state.messages.reduce(function (result, item) {
+          if (typeof item === 'string') {
+            result.messages.push(item);
+          } else {
+            if (item instanceof Object && item.promise instanceof Promise) {
+              result.promises.push(item);
+            }
+          }
+          return result;
+        }, { messages: [], promises: [] }),
+            messages = _state$messages$reduc.messages,
+            promises = _state$messages$reduc.promises;
+
+        if (promises.length) {
+          Promise.all(promises.map(function (item) {
+            return item.promise;
+          })).then(function (responses) {
+            var _messages = _this3.state.messages.concat(responses.map(function (valid, index) {
+              return valid ? true : promises[index].message;
+            }).filter(function (message) {
+              return typeof message === 'string';
+            }));
+
+            var isValid = _messages.length === 0;
+            var hasError = !_this3.state.hasFocus && !isValid;
+
+            // console.log('async', isValid, _messages)
+
+            _this3.setState({
+              isValid: isValid,
+              messages: _messages,
+              hasError: hasError
+            }, function () {
+              _this3.props.onValidate(state);
+            });
+          });
+        }
+
+        state.messages = messages;
+
+        // console.log('sync', state.isValid, state.messages)
+
         this.setState(state, function () {
           _this3.props.onValidate(state);
         });
@@ -208,17 +250,6 @@ var ValidatorCore = function (_React$Component) {
     key: 'render',
     value: function render() {
       return this.props.render(this.state);
-      // const Wrapper = this.props.wrapper;
-      // return (
-      //   <Wrapper 
-      //     ref={el => this.el = el} 
-      //     onChange={(ev) => this._onChange(ev)} 
-      //     onFocus={(ev) => this._onFocus(ev)} 
-      //     onBlur={(ev) => this._onBlur(ev)}
-      //     className={this.props.className}>
-      //     {this.props.render(this.state)}
-      //   </Wrapper>
-      // )
     }
 
     /* PUBLIC */
@@ -237,14 +268,6 @@ var ValidatorCore = function (_React$Component) {
       state.messages = this._checkErrors(this.state[this._valueProp]);
       state.isValid = !state.messages.length;
       state.hasError = !state.isValid;
-
-      /*let rect = this.el.getBoundingClientRect();
-       
-      setTimeout(() => {
-        if (state.hasError && rect.y) {
-          window.scrollTo(0, rect.y - 80);
-        }
-      }, 50)*/
 
       this.setState(state, function () {
         _this4.props.onValidateForm(state);
@@ -296,7 +319,8 @@ var ValidatorCore = function (_React$Component) {
           validators.push({
             func: _this5[methodName],
             name: methodName,
-            params: []
+            params: [],
+            message: _this5[methodName + 'Error']
           });
         }
 
@@ -304,7 +328,8 @@ var ValidatorCore = function (_React$Component) {
           validators.push({
             func: methodName,
             name: 'unknown',
-            params: []
+            params: [],
+            message: 'Error'
           });
         }
 
@@ -316,10 +341,9 @@ var ValidatorCore = function (_React$Component) {
             validators.push({
               func: func,
               name: hash.name || 'unknown',
-              params: [].concat(hash.params || [])
+              params: [].concat(hash.params || []),
+              message: hash.message || _this5.props[methodName + 'Error'] || _this5[methodName + 'Error'] || 'Error'
             });
-          } else {
-            debugger;
           }
         }
       });
@@ -330,13 +354,14 @@ var ValidatorCore = function (_React$Component) {
           var result = validator.func.apply(_this5, [value].concat(validator.params));
 
           if (!result) {
-            var methodName = validator.name;
-            var message = _this5.props[methodName + 'Error'] || _this5[methodName + 'Error'] || 'Error';
-            errors.push(message);
+            errors.push(validator.message);
           }
 
           if (result instanceof Promise) {
-            errors.push(result);
+            var methodName = validator.name;
+            errors.push(_extends({}, validator, {
+              promise: result
+            }));
           }
         });
       }
