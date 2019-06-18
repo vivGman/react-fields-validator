@@ -86,6 +86,7 @@ var ValidatorCore = function (_React$Component) {
 
     _this.state = {
       value: _this.props.value === undefined ? _this.props.defaultValue : _this.props.value,
+      checked: _this.props.value === undefined ? _this.props.defaultValue : _this.props.value,
       messages: [],
       isValid: true,
       hasError: false
@@ -268,6 +269,8 @@ var ValidatorCore = function (_React$Component) {
         messages: this.state.messages,
         hasError: false
       };
+
+      if (this._valueProp === 'checked') ;
 
       state.messages = this._checkErrors(this.state[this._valueProp]);
       state.isValid = !state.messages.length;

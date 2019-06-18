@@ -29,6 +29,7 @@ export default class ValidatorCore extends React.Component {
 
     this.state = {
       value: this.props.value === undefined ? this.props.defaultValue : this.props.value,
+      checked: this.props.value === undefined ? this.props.defaultValue : this.props.value,
       messages: [],
       isValid: true,
       hasError: false,
@@ -183,6 +184,10 @@ export default class ValidatorCore extends React.Component {
       messages: this.state.messages,
       hasError: false
     };
+
+    if (this._valueProp === 'checked') {
+
+    }
 
     state.messages = this._checkErrors(this.state[this._valueProp]); 
     state.isValid = !state.messages.length;
