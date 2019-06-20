@@ -176,20 +176,19 @@ var ValidatorCore = function (_React$Component) {
       }
 
       // if (nextState[this._valueProp] !== this.state[this._valueProp]) {
+      //   console.log('change')
       //   needUpdate = true;
       //   state.messages = this._checkErrors(nextState[this._valueProp]); 
 
       //   if (nextState.hasFocus) {
-      //     // state.messages = [];
       //     state.isValid = true;
       //     state.hasError = false;
       //   } else {
       //     state.isValid = !state.messages.length;
       //   }
-      //   // console.log(2, state.messages)
       // }
 
-      if (nextState.hasFocus !== this.state.hasFocus) {
+      if (nextState.hasFocus !== this.state.hasFocus || nextState[this._valueProp] !== this.state[this._valueProp]) {
         needUpdate = true;
         state.messages = this._checkErrors(nextState[this._valueProp]);
 
