@@ -149,6 +149,15 @@ var ValidatorCore = function (_React$Component) {
       }
     }
   }, {
+    key: 'componentDidUpdate',
+    value: function componentDidUpdate(prevProps) {
+
+      if (this.state.hasError && this.props.validators.length !== prevProps.validators.length) {
+        this.panic();
+        return;
+      }
+    }
+  }, {
     key: 'componentWillUnmount',
     value: function componentWillUnmount() {
       var index = this.props.onValidateForm.validators.indexOf(this);
@@ -165,11 +174,6 @@ var ValidatorCore = function (_React$Component) {
         hasError: false
       };
       var needUpdate = false;
-
-      if (this.state.hasError && this.props.validators.length !== nextProps.validators.length) {
-        this.panic();
-        return;
-      }
 
       if (!this.props.bool && !this.state[this._valueProp] && nextProps.value !== this.state[this._valueProp]) {
         needUpdate = true;

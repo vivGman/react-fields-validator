@@ -73,6 +73,15 @@ export default class ValidatorCore extends React.Component {
 
   }
 
+  componentDidUpdate(prevProps) {
+
+    if (this.state.hasError && this.props.validators.length !== prevProps.validators.length) {
+      this.panic();
+      return;
+    }
+
+  }
+
   componentWillUnmount() {
     const index = this.props.onValidateForm.validators.indexOf(this);
     this.props.onValidateForm.validators.splice(index, 1);
@@ -85,11 +94,6 @@ export default class ValidatorCore extends React.Component {
       hasError: false
     };
     let needUpdate = false;
-
-    if (this.state.hasError && this.props.validators.length !== nextProps.validators.length) {
-      this.panic();
-      return;
-    }
 
     if (!this.props.bool && !this.state[this._valueProp] && nextProps.value !== this.state[this._valueProp]) {
       needUpdate = true;
