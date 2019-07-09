@@ -166,6 +166,11 @@ var ValidatorCore = function (_React$Component) {
       };
       var needUpdate = false;
 
+      if (this.state.hasError && this.props.validators.length !== prevProps.validators.length) {
+        this.panic();
+        return;
+      }
+
       if (!this.props.bool && !this.state[this._valueProp] && nextProps.value !== this.state[this._valueProp]) {
         needUpdate = true;
         state.messages = this._checkErrors(nextProps.value);
