@@ -152,8 +152,8 @@ var ValidatorCore = function (_React$Component) {
     key: 'componentDidUpdate',
     value: function componentDidUpdate(prevProps) {
 
-      if (this.state.hasError && this.props.validators.length !== prevProps.validators.length) {
-        this.panic();
+      if (this.props.validators.length !== prevProps.validators.length) {
+        this.panic(this.state.hasError);
         return;
       }
     }
@@ -272,6 +272,8 @@ var ValidatorCore = function (_React$Component) {
     value: function panic() {
       var _this4 = this;
 
+      var setHasError = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : true;
+
       var state = {
         isValid: true,
         messages: this.state.messages,
@@ -282,7 +284,9 @@ var ValidatorCore = function (_React$Component) {
 
       state.messages = this._checkErrors(this.state[this._valueProp]);
       state.isValid = !state.messages.length;
-      state.hasError = !state.isValid;
+      if (setHasError) {
+        state.hasError = !state.isValid;
+      }
 
       this.setState(state, function () {
         _this4.props.onValidateForm(state);

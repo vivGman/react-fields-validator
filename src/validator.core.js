@@ -75,8 +75,8 @@ export default class ValidatorCore extends React.Component {
 
   componentDidUpdate(prevProps) {
 
-    if (this.state.hasError && this.props.validators.length !== prevProps.validators.length) {
-      this.panic();
+    if (this.props.validators.length !== prevProps.validators.length) {
+      this.panic(this.state.hasError);
       return;
     }
 
@@ -186,7 +186,7 @@ export default class ValidatorCore extends React.Component {
 
   /* PUBLIC */
 
-  panic() {
+  panic(setHasError=true) {
     let state = {
       isValid: true,
       messages: this.state.messages,
@@ -199,7 +199,9 @@ export default class ValidatorCore extends React.Component {
 
     state.messages = this._checkErrors(this.state[this._valueProp]); 
     state.isValid = !state.messages.length;
-    state.hasError = !state.isValid;
+    if (setHasError) {
+      state.hasError = !state.isValid;
+    }
 
     this.setState(state, () => {
       this.props.onValidateForm(state);
