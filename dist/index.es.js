@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import PropTypes from 'prop-types';
+import 'prop-types';
 
 var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) {
   return typeof obj;
@@ -132,25 +132,25 @@ var ValidatorCore = function (_React$Component) {
         }, {
           capture: true
         });
-        domNode.addEventListener('focus', function (ev) {
-          return _this2._onFocus(ev);
-        }, {
-          capture: true
-        });
-        domNode.addEventListener('blur', function (ev) {
-          return _this2._onBlur(ev);
-        }, {
-          capture: true
-        });
+        if (this.props.handleFocus) {
+          domNode.addEventListener('focus', function (ev) {
+            return _this2._onFocus(ev);
+          }, {
+            capture: true
+          });
+          domNode.addEventListener('blur', function (ev) {
+            return _this2._onBlur(ev);
+          }, {
+            capture: true
+          });
+        }
       }
     }
   }, {
     key: 'componentDidUpdate',
     value: function componentDidUpdate(prevProps) {
-
       if (this.props.validators.length !== prevProps.validators.length) {
         this.panic(this.state.hasError);
-        return;
       }
     }
   }, {
@@ -183,7 +183,7 @@ var ValidatorCore = function (_React$Component) {
       // if (nextState[this._valueProp] !== this.state[this._valueProp]) {
       //   console.log('change')
       //   needUpdate = true;
-      //   state.messages = this._checkErrors(nextState[this._valueProp]); 
+      //   state.messages = this._checkErrors(nextState[this._valueProp]);
 
       //   if (nextState.hasFocus) {
       //     state.isValid = true;
@@ -314,28 +314,34 @@ var ValidatorCore = function (_React$Component) {
   }, {
     key: '_onBlur',
     value: function _onBlur(ev) {
-      this.setState({
-        isChanged: true,
-        hasFocus: false
-      });
+      var _this5 = this;
+
+      setTimeout(function () {
+        _this5.setState({
+          isChanged: true,
+          hasFocus: false
+        });
+      }, 150);
     }
   }, {
     key: '_checkErrors',
     value: function _checkErrors(value) {
-      var _this5 = this;
+      var _this6 = this;
 
       var isRequired = this.props.validators.includes('isRequired');
       var validators = [];
+      // let names = []
+      // let params = []
       var errors = [];
+      // const promises = []
 
       this.props.validators.forEach(function (methodName) {
-
-        if (typeof methodName === 'string' && _this5[methodName] && typeof _this5[methodName] === 'function') {
+        if (typeof methodName === 'string' && _this6[methodName] && typeof _this6[methodName] === 'function') {
           validators.push({
-            func: _this5[methodName],
+            func: _this6[methodName],
             name: methodName,
             params: [],
-            message: _this5[methodName + 'Error']
+            message: _this6[methodName + 'Error']
           });
         }
 
@@ -350,14 +356,14 @@ var ValidatorCore = function (_React$Component) {
 
         if ((typeof methodName === 'undefined' ? 'undefined' : _typeof(methodName)) === 'object') {
           var hash = methodName;
-          var defaultFunc = typeof _this5[hash.name] === 'function' ? _this5[hash.name] : null;
+          var defaultFunc = typeof _this6[hash.name] === 'function' ? _this6[hash.name] : null;
           var func = hash.func || defaultFunc;
           if (func) {
             validators.push({
               func: func,
               name: hash.name || 'unknown',
               params: [].concat(hash.params || []),
-              message: hash.message || _this5.props[methodName + 'Error'] || _this5[methodName + 'Error'] || 'Error'
+              message: hash.message || _this6.props[methodName + 'Error'] || _this6[methodName + 'Error'] || 'Error'
             });
           }
         }
@@ -365,8 +371,7 @@ var ValidatorCore = function (_React$Component) {
 
       if (isRequired ? true : Boolean(value)) {
         validators.forEach(function (validator, index) {
-
-          var result = validator.func.apply(_this5, [value].concat(validator.params));
+          var result = validator.func.apply(_this6, [value].concat(validator.params));
 
           if (!result) {
             errors.push(validator.message);
@@ -406,11 +411,9 @@ var ValidatorCore = function (_React$Component) {
   return ValidatorCore;
 }(React.Component);
 
-ValidatorCore.propTypes = {
-  defaultValue: PropTypes.any
-};
 ValidatorCore.defaultProps = {
   enableEventListeners: true,
+  handleFocus: true,
   bool: false,
   defaultValue: '',
   wrapper: 'div',
