@@ -25,7 +25,7 @@ export default class Validator extends ValidatorCore {
 
   isUrl(value) {
     value = String(value)
-    const reg = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[а-яa-z0-9]+([\-\.]{1}[а-яa-z0-9]+)*\.[а-яa-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm
+    const reg = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[а-яa-z0-9]+([\-\.]{1}[а-яa-z0-9]+)*\.[а-яa-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm
     return value.match(reg)
   }
 
