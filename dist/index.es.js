@@ -465,7 +465,7 @@ var Validator = function (_ValidatorCore) {
     key: 'isUrl',
     value: function isUrl(value) {
       value = String(value);
-      var reg = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)?[a-z0-9]+([\-\.]{1}[a-z0-9]+)*\.[a-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
+      var reg = /^(http:\/\/www\.|https:\/\/www\.|http:\/\/|https:\/\/)[а-яa-z0-9]+([\-\.]{1}[а-яa-z0-9]+)*\.[а-яa-z]{2,5}(:[0-9]{1,5})?(\/.*)?$/gm;
       return value.match(reg);
     }
   }, {
